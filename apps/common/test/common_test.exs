@@ -1,6 +1,6 @@
 defmodule CommonTest do
   use ExUnit.Case
   
-  doctest Common.Packet
+  doctest Common.Packets
 
 end

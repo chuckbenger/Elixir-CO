@@ -2,29 +2,35 @@
 defmodule AuthConnector do
 	use Reagent.Behaviour
 	import Packets
+  import Packets.Encoder
 	require Logger
 
+  @moduledoc """
+  Handles a authentication request to the server
+  """
+
   def handle(conn) do
+    Logger.debug "New Connection #{inspect conn}"
     case conn |> Socket.Stream.recv! do
       nil ->
         :closed
       data -> 	 
-      with {dec, _} 				      = Crypto.decrypt(data, %Crypto{}), 
-        	 {:ok, %LoginRequest{}=login} = decode(dec),
-        	 {:ok, valid_login}      	  = validate_login(login),
-        	 {:ok, server_info}		 	  = get_server(valid_login) do
-        		login_response(server_info)
-        	 end
-       |> handle_result(conn)
+        with {dec, _} 				            = Crypto.decrypt(data, %Crypto{}), 
+          	 {:ok, %LoginRequest{}=login} = decode(dec),
+          	 {:ok, valid_login}      	    = validate_login(login),
+          	 {:ok, server_info}		 	      = get_server(valid_login) do
+          		login_response(server_info)
+          	 end
+         |> handle_result(conn) #Error
     end
   end
 
   defp handle_result(packet, conn) when is_binary(packet) do
   	{enc, _} = Crypto.encrypt(packet, %Crypto{})
-  	conn |> Socket.Stream.send! enc
+  	conn |> Socket.Stream.send!(enc)
   end
 
-  defp handle_result(error, conn), do: Logger.debug("Handle eror #{inspect error}")
+  defp handle_result(error, _conn), do: Logger.debug("Handle eror #{inspect error}")
 
   defp validate_login(%LoginRequest{username: user, server: server}) do
   	case Auth.Model.Account.get_by_username(user) do

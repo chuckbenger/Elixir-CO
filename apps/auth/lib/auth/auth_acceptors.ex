@@ -1,4 +1,4 @@
-defmodule Acceptors do
+defmodule Auth.Acceptors do
     @moduledoc """
     Supervisor responsible for spinning up a pool of TCP acceptors to handle Auth
     requests. 

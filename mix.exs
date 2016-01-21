@@ -13,7 +13,9 @@ defmodule ConquerServer.Mixfile do
       {:ecto,    "~> 1.1"},
       {:mariaex, ">= 0.0.0"},
       {:reagent, "~> 0.1.5"},
-      {:table_rex, "~> 0.8.0"}
+      {:table_rex, "~> 0.8.0"},
+      {:earmark, "~> 0.1", only: :dev},
+      {:ex_doc, "~> 0.11", only: :dev}
      ]
   end
 end

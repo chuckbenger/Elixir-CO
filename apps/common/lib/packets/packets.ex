@@ -10,8 +10,8 @@ defmodule Common.Packets do
 
 	## Examples
 
-      iex> Packets.finish(<<1,2>>)
-      <<2,1,2>>
+      iex> Common.Packets.finish(<<1,2>>)
+      <<2, 0,1,2>>
 
 	"""
 	def finish(bytes), do: <<byte_size(bytes)::little-integer-size(2)-unit(8)>> <> bytes
