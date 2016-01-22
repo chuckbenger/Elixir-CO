@@ -18,6 +18,6 @@ defmodule Auth.Acceptors do
       ]
       opts = [strategy: :one_for_one, name: __MODULE__]
 
-      Supervisor.start_link([worker(Reagent, [AuthConnector, reagent_props])], opts)
+      Supervisor.start_link([worker(Reagent, [Auth.Connector, reagent_props])], opts)
     end
   end

@@ -1,8 +1,8 @@
 
-defmodule AuthConnector do
+defmodule Auth.Connector do
 	use Reagent.Behaviour
-	import Packets
-  import Packets.Encoder
+	import Auth.Packets.Decoder
+  import Auth.Packets.Encoder
 	require Logger
 
   @moduledoc """
@@ -14,14 +14,14 @@ defmodule AuthConnector do
     case conn |> Socket.Stream.recv! do
       nil ->
         :closed
-      data -> 	 
+      data ->
         with {dec, _} 				            = Crypto.decrypt(data, %Crypto{}), 
           	 {:ok, %LoginRequest{}=login} = decode(dec),
           	 {:ok, valid_login}      	    = validate_login(login),
           	 {:ok, server_info}		 	      = get_server(valid_login) do
           		login_response(server_info)
           	 end
-         |> handle_result(conn) #Error
+         |> handle_result(conn) #Error 
     end
   end
 

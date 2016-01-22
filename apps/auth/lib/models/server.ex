@@ -1,16 +1,9 @@
-defmodule Auth.Model.Servers do
-  use Ecto.Schema
+defmodule Auth.Model.Servers do  
   import Ecto.Query
   import Auth.Repo
 
-   schema "servers" do
-   	field :Servername, :string
-    field :ServerIP,   :string
-    field :ServerPort, :integer
-   end
-
    def get_by_name(name) do
-   	__MODULE__
+   	Models.Servers
    	|> where(Servername: ^name)
    	|> limit(1)
    	|> all

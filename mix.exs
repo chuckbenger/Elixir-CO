@@ -15,7 +15,8 @@ defmodule ConquerServer.Mixfile do
       {:reagent, "~> 0.1.5"},
       {:table_rex, "~> 0.8.0"},
       {:earmark, "~> 0.1", only: :dev},
-      {:ex_doc, "~> 0.11", only: :dev}
+      {:ex_doc, "~> 0.11", only: :dev},
+      {:csv, "~> 1.2.3"}
      ]
   end
 end
