@@ -15,9 +15,12 @@ defmodule Auth do
     
     write_server_info
 
+    port      = Application.get_env(:auth, :port)
+    listeners = Application.get_env(:auth, :listeners)
+
     children = [
-      supervisor(Auth.Acceptors, []),
-      supervisor(Auth.Repo, [])
+      supervisor(Common.Acceptor, [port, listeners, Auth.Connector]),
+      supervisor(Common.Models.Repo, [])
     ]
 
     opts = [strategy: :one_for_one, name: __MODULE__]

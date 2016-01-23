@@ -1,4 +1,4 @@
-defmodule Auth.Acceptors do
+defmodule Common.Acceptor do
     @moduledoc """
     Supervisor responsible for spinning up a pool of TCP acceptors to handle Auth
     requests. 
@@ -6,11 +6,8 @@ defmodule Auth.Acceptors do
     Settings are configured using the auth configuration file
     """
 
-    def start_link do
+    def start_link(port, listeners, connector) do
       import Supervisor.Spec, warn: false
-
-      port      = Application.get_env(:auth, :port)
-      listeners = Application.get_env(:auth, :listeners)
 
       reagent_props = [
         port: port,
@@ -18,6 +15,6 @@ defmodule Auth.Acceptors do
       ]
       opts = [strategy: :one_for_one, name: __MODULE__]
 
-      Supervisor.start_link([worker(Reagent, [Auth.Connector, reagent_props])], opts)
+      Supervisor.start_link([worker(Reagent, [connector, reagent_props])], opts)
     end
   end

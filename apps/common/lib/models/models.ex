@@ -1,4 +1,4 @@
-defmodule Models do
+defmodule Common.Models do
 defmodule Accounts do
    use Ecto.Schema
    schema "accounts" do

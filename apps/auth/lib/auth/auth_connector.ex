@@ -1,9 +1,13 @@
 
 defmodule Auth.Connector do
 	use Reagent.Behaviour
-	import Auth.Packets.Decoder
-  import Auth.Packets.Encoder
+
+	import Common.Packets.Decoder
+  import Common.Packets.Encoder
 	require Logger
+
+  alias Common.Packets.Structs.{LoginRequest, LoginResponse}
+  alias Common.Models.Queries.{Account, Server}
 
   @moduledoc """
   Handles a authentication request to the server
@@ -19,7 +23,7 @@ defmodule Auth.Connector do
           	 {:ok, %LoginRequest{}=login} = decode(dec),
           	 {:ok, valid_login}      	    = validate_login(login),
           	 {:ok, server_info}		 	      = get_server(valid_login) do
-          		login_response(server_info)
+          		encode(server_info)
           	 end
          |> handle_result(conn) #Error 
     end
@@ -33,15 +37,15 @@ defmodule Auth.Connector do
   defp handle_result(error, _conn), do: Logger.debug("Handle eror #{inspect error}")
 
   defp validate_login(%LoginRequest{username: user, server: server}) do
-  	case Auth.Model.Account.get_by_username(user) do
+  	case Account.get_by_username(user) do
   		[account] -> {:ok, {account.id, server}}
   		[] 		  -> :invalid_login
   	end
   end
 
   defp get_server({account_id, server}) do
-  	case Auth.Model.Servers.get_by_name(server) do
-  		[server] -> {:ok, {account_id, 1, server."ServerIP", server."ServerPort"}}
+  	case Server.get_by_name(server) do
+  		[server] -> {:ok, %LoginResponse{uid: account_id, token: 1, ip: server."ServerIP", port: server."ServerPort"} }
   		[]       -> {:no_server, server}
   	end
   end
