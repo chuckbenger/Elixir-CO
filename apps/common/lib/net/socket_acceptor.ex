@@ -1,6 +1,6 @@
 defmodule Common.Acceptor do
     @moduledoc """
-    Supervisor responsible for spinning up a pool of TCP acceptors to handle Auth
+    Supervisor responsible for spinning up a pool of TCP acceptors to handle
     requests. 
 
     Settings are configured using the auth configuration file

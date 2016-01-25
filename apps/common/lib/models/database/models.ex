@@ -1,59 +1,60 @@
-defmodule Common.Models do
+defmodule Common.Models.Database do
 defmodule Accounts do
    use Ecto.Schema
+
    schema "accounts" do
-      field :address, :integer
-      field :auth, :integer
-      field :type, :integer
+      has_many :characters, Common.Models.Database.Characters, foreign_key: :account_id
       field :password, :string
       field :username, :string
    end
 end
 defmodule Characters do
    use Ecto.Schema
+
    schema "characters" do
-      field :HouseType, :integer
-      field :PreviousMap, :integer
-      field :ExpPotionRate, :integer
-      field :ExpPotionTime, :integer
-      field :DbExpUsed, :string
-      field :FirstLog, :integer
+      has_one :server, Common.Models.Database.Servers, foreign_key: :server_id
+
+      field :account_id, :integer
+      field :houseType, :integer
+      field :previousMap, :integer
+      field :expPotionRate, :integer
+      field :expPotionTime, :integer
+      field :dbExpUsed, Ecto.DateTime
+      field :firstLog, :integer
       field :isPM, :integer
-      field :Honor, :integer
-      field :Class, :integer
-      field :HouseID, :integer
-      field :GRank, :integer
-      field :Guild, :integer
+      field :honor, :integer
+      field :class, :integer
+      field :houseID, :integer
+      field :gRank, :integer
+      field :guild, :integer
       field :nobility, :integer
       field :isGM, :integer
-      field :Reborn, :integer
-      field :GDonation, :integer
-      field :Status, :string
+      field :reborn, :integer
+      field :gDonation, :integer
+      field :status, :string
       field :yCord, :integer
       field :xCord, :integer
-      field :MapInstance, :integer
-      field :Map, :integer
-      field :Model, :integer
-      field :HairStyle, :integer
-      field :WHMoney, :integer
-      field :VPoints, :integer
-      field :CPoints, :integer
-      field :Money, :integer
-      field :StatPoints, :integer
-      field :PkPoints, :integer
-      field :MP, :integer
-      field :HP, :integer
-      field :Vit, :integer
-      field :Spi, :integer
-      field :Dex, :integer
-      field :Str, :integer
-      field :Exp, :string
-      field :Level, :integer
-      field :Spouse, :string
-      field :Server, :string
-      field :Account_id, :integer
-      field :Name, :string
-      field :CharID, :integer
+      field :mapInstance, :integer
+      field :map, :integer
+      field :model, :integer
+      field :hairStyle, :integer
+      field :wHMoney, :integer
+      field :vPoints, :integer
+      field :cPoints, :integer
+      field :money, :integer
+      field :statPoints, :integer
+      field :pkPoints, :integer
+      field :mp, :integer
+      field :hp, :integer
+      field :vit, :integer
+      field :spi, :integer
+      field :dex, :integer
+      field :str, :integer
+      field :exp, :integer
+      field :level, :integer
+      field :spouse, :string
+      field :server_id, :integer
+      field :name, :string
    end
 end
 defmodule Enemys do
@@ -104,6 +105,7 @@ defmodule Maps do
    schema "maps" do
       field :type, :integer
       field :mapdoc, :integer
+      field :server_host, :string
    end
 end
 defmodule Mobspawns do
@@ -193,9 +195,9 @@ end
 defmodule Servers do
    use Ecto.Schema
    schema "servers" do
-      field :ServerPort, :integer
-      field :ServerIP, :string
-      field :Servername, :string
+      field :serverPort, :integer
+      field :serverIP, :string
+      field :serverName, :string
    end
 end
 defmodule Serverskill do

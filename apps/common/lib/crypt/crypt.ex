@@ -1,7 +1,7 @@
 defmodule Crypto do
 	import Bitwise
 	require Bitwise
-	defstruct in_counter: 0, out_counter: 0
+	defstruct in_counter: 0, out_counter: 0, using_alt: false, key3: [], key4: []
 
 	@maxCounter bsl(1, 16)
 	@key1 [
@@ -41,50 +41,81 @@ defmodule Crypto do
 				0xF2, 0x5F, 0xF8, 0xA5, 0x6E, 0xFB, 0x14, 0x21, 0xAA, 0xD7, 0xF0, 0xDD, 0xA6, 0xF3, 0x8C, 0xD9
             ]
 
-       def decrypt(bytes, %Crypto{in_counter: counter, out_counter: _} = crypt) do
-       		{decrypted, new_counter} = _decrypt(bytes, <<>>, counter)
-       		{decrypted, %{crypt | in_counter: new_counter}}
-       end
-       
-       defp _decrypt(<<>>, decrypted, in_counter) do
-       	{decrypted, in_counter}
-       end
+      def decrypt(bytes, %Crypto{}=c) do
+            {keyBytes1, keyBytes2} = case c.using_alt do
+                                          true  -> {c.key3, c.key4}
+                                          false -> {@key1, @key2}
+                                     end
 
-       defp _decrypt(<<byte::size(8), remaining::binary>>, decrypted, in_counter) do
-            keyByte1 = Enum.at(@key1, (band in_counter, 0xFF))
-            keyByte2 = Enum.at(@key2, (bsr in_counter, 8))
+            {new_in, dec} =                         
+            bytes
+            |> :binary.bin_to_list
+            |> Enum.reduce({c.in_counter,<<>>}, fn byte, {in_counter, b} ->
+                  keyByte1 = Enum.at(keyBytes1, (band in_counter, 0xFF))
+                  keyByte2 = Enum.at(keyBytes2, (bsr in_counter, 8))
 
-            newByte   = bxor byte, 0xAB
-            d = bsr(band(newByte, 0xFF), 4)
-            |> bor(bsl(band(newByte, 0xFF), 4))
-            |> bxor(bxor(keyByte2, keyByte1))
+                  newByte   = bxor byte, 0xAB
+                   d = bsr(band(newByte, 0xFF), 4)
+                  |> bor(bsl(band(newByte, 0xFF), 4))
+                  |> bxor(bxor(keyByte2, keyByte1))
 
-            newIn = rem((in_counter+1), @maxCounter)
+                  { rem((in_counter+1), @maxCounter), b <> <<d>> }
+            end )
 
-            _decrypt(remaining, decrypted <> <<d>>, newIn)
-       end
-
-       def encrypt(bytes, %Crypto{in_counter: _, out_counter: counter} = crypt) do
-       		{encrypted, new_counter} = _encrypt(bytes, <<>>, counter)
-       		{encrypted, %{crypt | out_counter: new_counter}}
-       end
-       
-       defp _encrypt(<<>>, encrypted, out_counter) do
-       	{encrypted, out_counter}
+            {dec, %{c | in_counter: new_in} }
        end
 
-       defp _encrypt(<<byte::size(8), remaining::binary>>, encrypted, out_counter) do
-            keyByte1 = Enum.at(@key1, (band out_counter, 0xFF))
-            keyByte2 = Enum.at(@key2, (bsr out_counter, 8))
+       def encrypt(bytes, %Crypto{}=c) do
+            {new_out, enc} =  
+            bytes
+            |> :binary.bin_to_list
+            |> Enum.reduce({c.out_counter,<<>>}, fn byte, {out_counter, b} ->
+                  keyByte1 = Enum.at(@key1, (band out_counter, 0xFF))
+                  keyByte2 = Enum.at(@key2, (bsr out_counter, 8))
 
-            newByte   = bxor byte, 0xAB
-            d = bsr(band(newByte, 0xFF), 4)
-            |> bor(bsl(band(newByte, 0xFF), 4))
-            |> bxor(bxor(keyByte2, keyByte1))
+                  newByte   = bxor byte, 0xAB
+                   d = bsr(band(newByte, 0xFF), 4)
+                  |> bor(bsl(band(newByte, 0xFF), 4))
+                  |> bxor(bxor(keyByte2, keyByte1))
 
-            newIn = rem((out_counter+1), @maxCounter)
+                  { rem((out_counter+1), @maxCounter), b <> <<d>> }
+            end )
 
-            _encrypt(remaining, encrypted <> <<d>>, newIn)
+            {enc, %{c | out_counter: new_out} }
+       end
+
+
+
+       def set_keys(token, uid, %Crypto{}=current) do
+            dwordKey = bxor(token + uid, 0x4321) |> bxor(token)
+            imul = dwordKey * dwordKey
+
+            xorKey = [
+                  dwordKey,
+                  dwordKey |> bsr(8),
+                  dwordKey |> bsr(16),
+                  dwordKey |> bsr(24),
+                  imul,
+                  imul |> bsr(8),
+                  imul |> bsr(16),
+                  imul |> bsr(24) 
+            ] |> Enum.map(&(&1 |> band(0xFF))) 
+
+            zipped = 0..255
+            |> Enum.map(fn idx ->
+             {
+               Enum.at(xorKey, rem(idx, 4))   |> bxor(Enum.at(@key1, idx)),
+               Enum.at(xorKey, rem(idx, 4)+4) |> bxor(Enum.at(@key2, idx))
+             }
+            end)
+            |> List.zip
+
+            key3 = zipped |> Enum.at(0) |> Tuple.to_list
+            key4 = zipped |> Enum.at(1) |> Tuple.to_list
+            
+            %Crypto{ in_counter: current.in_counter, 
+                     out_counter: 0,
+                     using_alt: true, key3: key3, key4: key4}
        end
 
 end

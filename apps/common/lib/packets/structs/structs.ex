@@ -9,4 +9,12 @@ defmodule Common.Packets.Structs do
 	defmodule AuthMessage, do:
 		defstruct uid: 0, token: 0, message: ""
 
+	defmodule CharacterCreate, do:
+		defstruct accountName: "", name: "", password: "", model: 0, class: 0, uid: 0
+
 end
+
+
+
+
+

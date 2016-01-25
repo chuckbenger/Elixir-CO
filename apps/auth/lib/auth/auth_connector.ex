@@ -7,7 +7,7 @@ defmodule Auth.Connector do
 	require Logger
 
   alias Common.Packets.Structs.{LoginRequest, LoginResponse}
-  alias Common.Models.Queries.{Account, Server}
+  alias Common.Models.Database.Queries.{Account, Server}
 
   @moduledoc """
   Handles a authentication request to the server
@@ -23,6 +23,7 @@ defmodule Auth.Connector do
           	 {:ok, %LoginRequest{}=login} = decode(dec),
           	 {:ok, valid_login}      	    = validate_login(login),
           	 {:ok, server_info}		 	      = get_server(valid_login) do
+              Logger.debug "Redirecting client to #{inspect server_info}"
           		encode(server_info)
           	 end
          |> handle_result(conn) #Error 
@@ -45,7 +46,7 @@ defmodule Auth.Connector do
 
   defp get_server({account_id, server}) do
   	case Server.get_by_name(server) do
-  		[server] -> {:ok, %LoginResponse{uid: account_id, token: 1, ip: server."ServerIP", port: server."ServerPort"} }
+  		[server] -> {:ok, %LoginResponse{uid: account_id, token: 1, ip: server.serverIP, port: server.serverPort} }
   		[]       -> {:no_server, server}
   	end
   end
