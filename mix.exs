@@ -16,7 +16,9 @@ defmodule ConquerServer.Mixfile do
       {:table_rex, "~> 0.8.0"},
       {:earmark, "~> 0.1", only: :dev},
       {:ex_doc, "~> 0.11", only: :dev},
-      {:csv, "~> 1.2.3"}
+      {:csv, "~> 1.2.3"},
+      {:gproc, "~> 0.5.0"},
+      {:credo, "~> 0.2", only: [:dev, :test]}
      ]
   end
 end

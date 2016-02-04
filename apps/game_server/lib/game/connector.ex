@@ -55,6 +55,7 @@ defmodule Game.Connector do
     Send a packet to the client  
   """
   def handle_cast({:send_client, packet}, state) do
+    # Logger.debug "Sending #{inspect packet}"
     new_crypt = packet |> sendp(state.con, state.crypt)
     {:noreply, %{state | crypt: new_crypt }}
   end

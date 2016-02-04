@@ -32,8 +32,8 @@ defmodule Characters do
       field :reborn, :integer
       field :gDonation, :integer
       field :status, :string
-      field :yCord, :integer
-      field :xCord, :integer
+      field :y, :integer
+      field :x, :integer
       field :mapInstance, :integer
       field :map, :integer
       field :model, :integer

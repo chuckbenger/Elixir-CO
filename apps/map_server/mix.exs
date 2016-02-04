@@ -15,7 +15,7 @@ defmodule MapServer.Mixfile do
   end
 
   def application do
-    [applications: [:logger, :ecto, :mariaex],
+    [applications: [:logger, :ecto, :mariaex, :gproc, :table_rex],
      mod: {MapServer, []}]
   end
 

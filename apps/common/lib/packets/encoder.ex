@@ -1,16 +1,9 @@
 defmodule Common.Packets.Encoder do
 	require Logger
-	alias Common.Packets.Structs.{LoginResponse, Chat, GeneralUpdate, ItemUsage}
 	alias Common.Models.Database.{Characters}
-	
-	@moduledoc """
-	Packet Encoder
-	"""
-	@login_response 1055
-	@chat			1004
-	@character_info 1006
-	@general_update 1010
-	@item_usage     1009
+
+	use Common.Packets.Import
+
 
 	@doc """
 	Encode structure into a binary packet
@@ -69,7 +62,7 @@ defmodule Common.Packets.Encoder do
     The suffix was also used to scam people, people believed they were speaking to an official member of staff and gave out their usernames and passwords.
     You do not need to include a suffix string within your packets, however the length is still required to be 0.
 	"""
-	defp _encode(%Chat{from: from, to: to, message: msg, chatType: typ, msgID: id}), do:
+	defp _encode(%Chat{from: from, to: to, message: msg, type: typ, msgID: id}), do:
 		<< @chat 				::little-integer-size(2)-unit(8),
 			222  				::little-integer-size(1)-unit(8),
 			222  				::little-integer-size(1)-unit(8),
@@ -118,6 +111,34 @@ defmodule Common.Packets.Encoder do
       1          ::little-integer-size(1)-unit(8),
       2          ::little-integer-size(1)-unit(8),
 	  String.length(c.name) ::little-integer-size(1)-unit(8),
+      c.name ::binary >>
+
+
+    @doc """
+	Character Info (1006)
+	The Character Information packet, this packet is sent primarily during the login process to set the majority of your characters values.
+	"""
+	defp _encode({:player, %Characters{}=c}), do:
+	<< @entity_spawn ::little-integer-size(2)-unit(8),
+	   c.id      ::little-integer-size(4)-unit(8),
+      c.model    ::little-integer-size(4)-unit(8),
+      0          ::little-integer-size(4)-unit(8), #status
+      0          ::little-integer-size(2)-unit(8), #Guild id
+      0          ::little-integer-size(1)-unit(8),
+      0			 ::little-integer-size(1)-unit(8), #Guild Rank
+      0 		 ::little-integer-size(4)-unit(8), #Helm
+      0          ::little-integer-size(4)-unit(8), #Armor
+      0          ::little-integer-size(4)-unit(8), #R Weapon
+      0          ::little-integer-size(4)-unit(8), #L Weapon
+      0          ::little-integer-size(4)-unit(8),
+      0          ::little-integer-size(4)-unit(8),
+      c.x        ::little-integer-size(2)-unit(8),
+      c.y        ::little-integer-size(2)-unit(8),
+      c.hairStyle ::little-integer-size(2)-unit(8),
+      0           ::little-integer-size(1)-unit(8), #direction
+      0           ::little-integer-size(1)-unit(8), #Action
+      1           ::little-integer-size(1)-unit(8), #str count
+      String.length(c.name) ::little-integer-size(1)-unit(8),
       c.name ::binary >>
 
 

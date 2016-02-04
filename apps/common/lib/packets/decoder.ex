@@ -1,17 +1,14 @@
 defmodule Common.Packets.Decoder do
 	require Logger
 	import StringUtils
-	alias Common.Packets.Structs.{AuthMessage, LoginRequest, CharacterCreate, GeneralUpdate, ItemUsage}
+	
+	use Common.Packets.Import
 	
 	@moduledoc """
 	Packet decoder
 	"""
 
-	@auth_message   1052
-	@login_request  1051
-	@new_character  1001
-	@general_update 1010
-	@item_usage     1009
+	
 
 	@doc """
 	  General Update (1010)
@@ -89,6 +86,35 @@ defmodule Common.Packets.Decoder do
 									 	 model:       model,
 									 	 class:       class,
 									 	 uid:         uid }}
+
+	@doc """
+	Chat (1004)
+   	The Chat packet has changed a lot over the years, it still contains 4 strings(From, To, Suffix, Message),
+    although only 3 (From, To, Message) are now used on official servers. Suffix is now ignored, people were adding "[PM]" & "[GM]" t
+    o the end of their names in order to access admin commands which were built into the client, these commands have since been removed.
+    The suffix was also used to scam people, people believed they were speaking to an official member of staff and gave out their usernames and passwords.
+    You do not need to include a suffix string within your packets, however the length is still required to be 0.
+	"""
+	def decode(<< 
+			_size    ::little-integer-size(2)-unit(8),
+			@chat 	 ::little-integer-size(2)-unit(8),
+			_r  	 ::little-integer-size(1)-unit(8),
+			_g  	 ::little-integer-size(1)-unit(8),
+			_b  	 ::little-integer-size(1)-unit(8),
+			0    	 ::little-integer-size(1)-unit(8),
+			typ      ::little-integer-size(4)-unit(8),
+			id       ::little-integer-size(4)-unit(8),
+			4        ::little-integer-size(1)-unit(8),
+			from_len ::little-integer-size(1)-unit(8),
+			from 	 ::binary-size(from_len)-unit(8),
+			to_len 	 ::little-integer-size(1)-unit(8),
+			to       ::binary-size(to_len)-unit(8),
+			0        ::little-integer-size(1)-unit(8),
+			msg_len  ::little-integer-size(1)-unit(8),
+			msg 	 ::binary-size(msg_len)-unit(8),
+			_        ::binary
+		>>), do: {:ok, %Chat{from: from, to: to, message: msg, type: typ, msgID: id}}
+								 
 	
 	@doc """
 	Login Request Packet

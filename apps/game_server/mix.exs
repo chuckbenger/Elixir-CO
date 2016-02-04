@@ -15,11 +15,12 @@ defmodule GameServer.Mixfile do
   end
 
   def application do
-    [applications: [:logger, :ecto, :mariaex, :table_rex],
+    [applications: [:logger, :ecto, :mariaex, :table_rex, :gproc],
      mod: {GameServer, []}]
   end
 
   defp deps do
-    [{:common, in_umbrella: true}]
+    [{:common, in_umbrella: true},
+     {:map_server, in_umbrella: true}]
   end
 end

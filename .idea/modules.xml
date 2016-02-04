@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/deps/earmark/.iml" filepath="$PROJECT_DIR$/deps/earmark/.iml" />
+      <module fileurl="file://$PROJECT_DIR$/apps/auth/auth.iml" filepath="$PROJECT_DIR$/apps/auth/auth.iml" />
+      <module fileurl="file://$PROJECT_DIR$/apps/common/common.iml" filepath="$PROJECT_DIR$/apps/common/common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/deps/connection/connection.iml" filepath="$PROJECT_DIR$/deps/connection/connection.iml" />
+      <module fileurl="file://$PROJECT_DIR$/conquerserver.iml" filepath="$PROJECT_DIR$/conquerserver.iml" />
+      <module fileurl="file://$PROJECT_DIR$/deps/csv/csv.iml" filepath="$PROJECT_DIR$/deps/csv/csv.iml" />
+      <module fileurl="file://$PROJECT_DIR$/deps/decimal/decimal.iml" filepath="$PROJECT_DIR$/deps/decimal/decimal.iml" />
+      <module fileurl="file://$PROJECT_DIR$/deps/ecto/ecto.iml" filepath="$PROJECT_DIR$/deps/ecto/ecto.iml" />
+      <module fileurl="file://$PROJECT_DIR$/deps/ex_doc/exdoc.iml" filepath="$PROJECT_DIR$/deps/ex_doc/exdoc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/deps/exts/exts.iml" filepath="$PROJECT_DIR$/deps/exts/exts.iml" />
+      <module fileurl="file://$PROJECT_DIR$/apps/game_server/gameserver.iml" filepath="$PROJECT_DIR$/apps/game_server/gameserver.iml" />
+      <module fileurl="file://$PROJECT_DIR$/apps/map_server/mapserver.iml" filepath="$PROJECT_DIR$/apps/map_server/mapserver.iml" />
+      <module fileurl="file://$PROJECT_DIR$/deps/mariaex/mariaex.iml" filepath="$PROJECT_DIR$/deps/mariaex/mariaex.iml" />
+      <module fileurl="file://$PROJECT_DIR$/apps/npc_server/npcserver.iml" filepath="$PROJECT_DIR$/apps/npc_server/npcserver.iml" />
+      <module fileurl="file://$PROJECT_DIR$/deps/reagent/reagent.iml" filepath="$PROJECT_DIR$/deps/reagent/reagent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/deps/socket/socket.iml" filepath="$PROJECT_DIR$/deps/socket/socket.iml" />
+      <module fileurl="file://$PROJECT_DIR$/deps/table_rex/tablerex.iml" filepath="$PROJECT_DIR$/deps/table_rex/tablerex.iml" />
+    </modules>
+  </component>
+</project>

@@ -34,7 +34,7 @@ defmodule Common.Models.Database.Queries do
 
    defmodule Map do
    		def get_all do
-   			Maps |> all
+   			Maps |> where(server_host: ^Atom.to_string(Node.self), id: 1038) |> limit(1) |> all
    		end
    end
 

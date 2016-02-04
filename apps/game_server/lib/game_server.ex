@@ -4,8 +4,9 @@ defmodule GameServer do
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
-    port      = Application.get_env(:game_server, :port)
-    listeners = Application.get_env(:game_server, :listeners)
+    port       = Application.get_env(:game_server, :port)
+    listeners  = Application.get_env(:game_server, :listeners)
+    map_server = Application.get_env(:game_server, :map_servers)
 
     children = [
       supervisor(Common.Acceptor, [port, listeners, Game.Connector]),
