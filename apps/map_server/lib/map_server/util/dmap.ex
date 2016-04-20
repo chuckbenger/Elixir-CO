@@ -6,7 +6,7 @@ defmodule MapServer.Util.DMap do
 		case File.read(path) do
 			{:ok, data} -> data |> process_map_data
 			{:error, reason} -> 
-				# Logger.debug "Failed to load dmap #{map_id}"
+				Logger.debug "Failed to load dmap #{reason}"
 				{0, 0,[[]]}
 		end
 	end

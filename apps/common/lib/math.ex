@@ -12,4 +12,9 @@ defmodule Common.Math do
 	def in_render(x1, y1, x2, y2), do:
 		distance_between(x1, y1, x2, y2) <= Common.Constants.render_distance
 
+	@doc """
+	Whether the client is in the distance of a portal
+	"""
+	def in_portal_distance(x1, y1, x2, y2), do:
+    	distance_between(x1, y1, x2, y2) <= Common.Constants.portal_distance
 end

@@ -7,4 +7,4 @@ config :game_server,
 	listeners: 2  #Number of ranch TCP listeners
 
 config :gproc,
-	gproc_dist: [:"map@Charless-MacBook-Pro",:"game@Charless-MacBook-Pro"]
+	gproc_dist: [:"map@eco",:"game@eco"]

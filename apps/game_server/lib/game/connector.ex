@@ -44,6 +44,7 @@ defmodule Game.Connector do
     Send a packet to the client  
   """
   def handle_cast({:send_client, packets}, state) when is_list(packets) do
+    # Logger.debug "Sending #{inspect packets}"
     new_crypt = 
     packets |> Enum.reduce(state.crypt, fn p, crypt ->
       p |> sendp(state.con, crypt)

@@ -1,19 +1,20 @@
 defmodule MapServer.Sector do
 	use GenServer
 	alias MapServer.Handler.{SectorHandler}
+  import Common.Math
 	require Logger
 
 	defmodule State, do:
-		defstruct map: 0, id: 0, conf: %{}
+		defstruct map: 0, id: 0, conf: %{}, portals: []
 
-	def start_link(map_id, sector_id, sector_config) do
-		GenServer.start_link(__MODULE__, [map_id, sector_id, sector_config], name: proc_name(map_id, sector_id))
+	def start_link(map_id, sector_id, sector_config, portals) do
+		GenServer.start_link(__MODULE__, [map_id, sector_id, sector_config, portals], name: proc_name(map_id, sector_id))
 	end
 
-	def init([map, id, config]) do
+	def init([map, id, config, portals]) do
 		:gproc.reg map_p(map)
 		:gproc.reg sector(map, id)
-		{:ok, %State{map: map, id: id, conf: config}}
+		{:ok, %State{map: map, id: id, conf: config, portals: portals}}
 	end
 
 	########################
@@ -25,8 +26,8 @@ defmodule MapServer.Sector do
   	def sub(map),      do: :gproc.reg map_events(map)
   	def sub(map, sec), do: :gproc.reg sector_events(map, sec)
 
-  	def get_my_sector(map_id, client, x, y, msg \\ nil), do: 
-  		cast_map(map_id, {:get_sector, client, x, y, msg})
+  	def get_my_sector(map_id, client, x, y, map_change, msg \\ nil), do: 
+  		cast_map(map_id, {:get_sector, client, x, y, map_change, msg})
 
 	def cast_map(map_id, msg), do:
 		map_p(map_id) |> via_gproc |> GenServer.cast(msg)
@@ -49,12 +50,20 @@ defmodule MapServer.Sector do
 		x + 1 >= sec.conf.x && x + 1 <= sec.conf.x_end &&
 		y + 1 >= sec.conf.y && y + 1 <= sec.conf.y_end
 
+  @doc """
+  Attempt to find a portal within the clients x, y coord
+  """
+  def find_portal(x, y, sec) do
+    sec.portals
+     |> Enum.find(:error, &(in_portal_distance(x, y, &1.from_x, &1.from_y)))
+  end
+
 	#####################
   	# Casts
   	#####################
-  	def handle_cast({:get_sector, client, x, y, msg}, sec) do
+  	def handle_cast({:get_sector, client, x, y, map_change, msg}, sec) do
   		if in_sector(x, y, sec) do
-  			GenServer.cast(client, {:sector, sec.map, sec.id})
+  			GenServer.cast(client, {:sector, sec.map, sec.id, x, y, map_change})
   		end
   		{:noreply, sec}
   	end

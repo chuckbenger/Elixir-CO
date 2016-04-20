@@ -11,7 +11,6 @@
                 @complete_map_change     104
                 @confirm_freinds         76
                 @confirm_guild           97
-                @confirm_login_complete  130
                 @confirm_prof            77
                 @confirm_skills          78
                 @correct_cords           108

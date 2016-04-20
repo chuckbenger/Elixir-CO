@@ -5,11 +5,14 @@ defmodule Game.Client do
 
 	import Game.Connector
 
-	alias Game.Handler, as: GameH
-	alias Game.ServerHandler, as: ServerH
-	alias Game.PlayerHandler, as: PlayerH
+	alias Game.Handler, as: GH
+	alias Game.ServerHandler, as: SH
+	alias Game.PlayerHandler, as: PH
 	alias Common.Models.Database.{Characters}
+	alias Common.Models.Database.Queries.Character, as: Character
 	alias Common.Math
+
+	@persist_interval 60_000
 
 	defmodule ClientState, do:
 		defstruct con: nil, is_logged: false, char: %Characters{}, map_sub: 0, sector: 0, spawned_clients: %{}
@@ -19,6 +22,7 @@ defmodule Game.Client do
 	end
 
 	def init(state) do
+		:erlang.send_after(@persist_interval, self, :persist)
 		{:ok, state}
 	end
 
@@ -53,7 +57,7 @@ defmodule Game.Client do
 	Ask the map server what sector the client is curretly on based on the clients map
 	"""
 	def get_sector(%ClientState{}=client), do:
-		MapServer.Sector.get_my_sector(client.char.map, self, client.char.x, client.char.y)
+		MapServer.Sector.get_my_sector(client.char.map, self, client.char.x, client.char.y, false)
 
 	@doc """
 	Asks another client process to send it's entity information to a client
@@ -76,26 +80,22 @@ defmodule Game.Client do
 		if in_view(client, char.x, char.y) && 
 		   !Map.has_key?(client.spawned_clients, char.id) do
 			
-			Logger.debug "adding #{char.name} to #{client.char.name}"
+			{:player, char} |> send_client(client.con)
 			send_player client.char.id, char.id, {:my_entity_is, client.char}
-			 {:player, char} |> send_client(client.con)
+			  
 			 spawned = client.spawned_clients |> Map.put(char.id, true)
 			 %{client | spawned_clients: spawned}
-
 		end
 	end
 
 		@doc """
 	Adds a new character to the clients view if they are in view
 	"""
-	def remove_character(id, px, py, client) do
-		Logger.debug "Removing #{id} from #{client.char.name}"
-
+	def remove_character(id, client) do
 		if Map.has_key?(client.spawned_clients, id) do
-			GeneralUpdate.remove_entity(id, px, py) |> send_client(client.con)
-			send_player(client.char.id, id, {:i_removed_you, client.char.x, client.char.y})
+			Logger.debug "Removing #{id} from #{client.char.name}"
+			send_player client.char.id, id, :i_removed_you
 		end
-
 		%{client | spawned_clients: Map.delete(client.spawned_clients, id) }
 	end
 
@@ -114,7 +114,7 @@ defmodule Game.Client do
 	#####################
   	# Casts
   	#####################
-  	def handle_cast({:sector, map, sector}, client) do
+  	def handle_cast({:sector, map, sector, x, y, map_change}, client) do
   		if client.map_sub == 0 do
   			MapServer.Sector.sub(map)
   			MapServer.Sector.sub(map, sector)
@@ -129,13 +129,22 @@ defmodule Game.Client do
   				MapServer.Sector.unsub(client.map_sub, client.sector)
   			end
   		end
+  		new_char = 
+  		if map_change do
+  			GeneralUpdate.position(client.char.id, x, y, map) |> send_client(client.con)
+  			%{client.char | map: map, x: x, y: y }
+  		else
+  			client.char
+  		end
+  		
+  		new_client = %{client | sector: sector, map_sub: map, char: new_char }
 
-  		retrieve_surroundings(client)
+  		retrieve_surroundings(new_client)
 
   		Chat.center("Sector changing from #{client.sector} to #{sector}")
   		 |> send_client(client.con)
   		
-  		{:noreply, %{client | sector: sector, map_sub: map }}
+  		{:noreply, new_client}
   	end
 
   	@doc """
@@ -149,27 +158,39 @@ defmodule Game.Client do
   	#####################
   	# SERVER Handlers
   	#####################
-  	def handle_cast(%SectorBroadcast{msg: %GeneralUpdate{}}=msg, client), do: ServerH.GeneralHandler.handle(msg.msg, client) |> finish_h(client)
-  	def handle_cast(%SectorBroadcast{msg: %Chat{}}=msg, client),          do: ServerH.ChatHandler.handle(msg.msg, client)    |> finish_h(client)
-  	def handle_cast(%SectorBroadcast{msg: msg}, client), 			      do: ServerH.CommandHandler.handle(msg, client)     |> finish_h(client)
+  	def handle_cast(%SectorBroadcast{msg: %GeneralUpdate{}}=msg, client), do: msg.msg |> SH.General.handle(client, client.char.id)  |> finish_h(client)
+  	def handle_cast(%SectorBroadcast{msg: %Chat{}}=msg, client),          do: msg.msg |> SH.Chat.handle(client)                     |> finish_h(client)
+  	def handle_cast(%SectorBroadcast{msg: %Movement{}}=msg, client),      do: msg.msg |> SH.Movement.handle(client, client.char.id) |> finish_h(client)
+  	def handle_cast(%SectorBroadcast{msg: msg}, client), 			      do: msg     |> SH.Command.handle(client)                  |> finish_h(client)
 
   	#####################
   	# PLAYER to PLAYER Handlers
   	#####################
-  	def handle_cast(%PlayerBroadcast{}=msg, client), do: PlayerH.handle(msg.msg, msg.from, msg.to, client) |> finish_h(client)
+  	def handle_cast(%PlayerBroadcast{}=msg, client), do: msg.msg |> PH.handle(msg.from, msg.to, client) |> finish_h(client)
 
   	#####################
   	# PACKET Handlers
   	#####################
-	def handle_cast({:packet, %AuthMessage{}=a}, client), 	  do: GameH.AuthHandler.handle(a, client)      |> finish_h(client)
-	def handle_cast({:packet, %CharacterCreate{}=c}, client), do: GameH.AuthHandler.handle(c, client)      |> finish_h(client)
-	def handle_cast({:packet, %GeneralUpdate{}=g}, client),   do: GameH.GeneralHandler.handle(g, client)   |> finish_h(client)
-	def handle_cast({:packet, %ItemUsage{}=p}, client),       do: GameH.ItemUsageHandler.handle(p, client) |> finish_h(client)
-	def handle_cast({:packet, %Chat{}=p}, client),            do: GameH.ChatHandler.handle(p, client)      |> finish_h(client)
+	def handle_cast({:packet, %AuthMessage{}=msg}, client), 	do: msg |> GH.Auth.handle(client)      |> finish_h(client)
+	def handle_cast({:packet, %CharacterCreate{}=msg}, client), do: msg |> GH.Auth.handle(client)      |> finish_h(client)
+	def handle_cast({:packet, %GeneralUpdate{}=msg}, client),   do: msg |> GH.General.handle(client)   |> finish_h(client)
+	def handle_cast({:packet, %ItemUsage{}=msg}, client),       do: msg |> GH.ItemUsage.handle(client) |> finish_h(client)
+	def handle_cast({:packet, %Chat{}=msg}, client),            do: msg |> GH.Chat.handle(client)      |> finish_h(client)
+	def handle_cast({:packet, %Movement{}=msg}, client),        do: msg |> GH.Movement.handle(client)  |> finish_h(client)
 	def handle_cast({:packet, p}, client) do
 		Logger.debug "#{__MODULE__} no Packet Handler for #{inspect p}"
 		{ :noreply, client }
 	end
+
+	#####################
+  	# HANDLE INFO
+  	#####################
+  	def handle_info(:persist, client) do
+  		Logger.debug "Saving client #{client.char.name}"
+  		Character.save(client.char)
+  		:erlang.send_after(@persist_interval, self, :persist)
+  		{:noreply, client}
+  	end
 
 	#Update client state
 	defp finish_h(%ClientState{}=c, _client),   do: {:noreply, c}
@@ -194,7 +215,7 @@ defmodule Game.Client do
 	defp finish_h({:client, msg}, client) do
 		msg |> send_client(client.con)
 		{:noreply, client}
-	end   
+	end 
 
 	defp finish_h(_something, client),          do: {:noreply, client}
 	

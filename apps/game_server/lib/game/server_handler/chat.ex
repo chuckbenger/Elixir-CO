@@ -1,4 +1,4 @@
-defmodule Game.ServerHandler.ChatHandler do
+defmodule Game.ServerHandler.Chat do
 	require Logger
 	alias Common.Packets.Structs.{Chat}
 	use Common.Packets.Structs.ChatTypes

@@ -3,4 +3,4 @@
 use Mix.Config
 
 config :gproc,
-	gproc_dist: [:"map@Charless-MacBook-Pro",:"game@Charless-MacBook-Pro"]
+	gproc_dist: [:"map@eco",:"game@eco"]

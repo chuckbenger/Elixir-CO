@@ -1,0 +1,1 @@
+rsync -a ./ root@eco.game:/home/conquer

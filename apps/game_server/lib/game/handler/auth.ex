@@ -1,6 +1,6 @@
-defmodule Game.Handler.AuthHandler do
+defmodule Game.Handler.Auth do
 	alias Game.Connector, as: Conn
-	alias Common.Models.Database.Queries.{Characters}
+	alias Common.Models.Database.Queries.{Character}
 	alias Common.Packets.Structs.{AuthMessage, CharacterCreate, Chat}
 	import Game.Client
 
@@ -21,7 +21,7 @@ defmodule Game.Handler.AuthHandler do
 		new_state
 	end
 
-	def handle(%CharacterCreate{model: model, name: name, uid: uid}, client) do
+	def handle(%CharacterCreate{model: _model, name: _name, uid: _uid}, client) do
 		client
 	end
 
@@ -30,7 +30,7 @@ defmodule Game.Handler.AuthHandler do
 	##################
 
 	defp login_character(%AuthMessage{}=auth) do
-		case Characters.get_by_uid_and_server auth.uid, "Test" do
+		case Character.get_by_uid_and_server auth.uid, "Test" do
 			[record] -> { :existing, Enum.at(record.characters,0) }
 			[]       -> { :new_user, Chat.new_user }
 		end 

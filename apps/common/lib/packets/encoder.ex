@@ -30,7 +30,7 @@ defmodule Common.Packets.Encoder do
 	"""
 	defp _encode(%GeneralUpdate{}=g), do:
 		<< @general_update  ::little-integer-size(2)-unit(8),
-		   0 			    ::little-integer-size(4)-unit(8),
+		   :erlang.system_time ::little-integer-size(4)-unit(8),
 		   g.id 			::little-integer-size(4)-unit(8),
 		   g.parm1			::little-integer-size(2)-unit(8),
 		   g.parm2			::little-integer-size(2)-unit(8),
@@ -40,6 +40,20 @@ defmodule Common.Packets.Encoder do
 		   g.parm6			::little-integer-size(2)-unit(8),
 		   g.type			::little-integer-size(4)-unit(8)
 		>>
+
+	@doc """
+	  Item Usages (1005)
+	  The EntityMove packet, also known as the Walk packet, 
+	  this packet is used by all entitys that can move, such as Players, Monsters and if you wish NPCs.
+	"""
+	defp _encode(%Movement{id: id, dir: dir, run: run}) do
+		run_num = (if run, do: 1, else: 0)
+		<< @entity_move   ::little-integer-size(2)-unit(8),
+		   id    		  ::little-integer-size(4)-unit(8),
+		   dir 		      ::little-integer-size(1)-unit(8),
+		   run_num        ::little-integer-size(1)-unit(8)
+		>>
+	end
 
 	@doc """
 	  Item Usages (1009)
@@ -78,6 +92,20 @@ defmodule Common.Packets.Encoder do
 			0                   ::little-integer-size(1)-unit(8),
 			String.length(msg)  ::little-integer-size(1)-unit(8),
 			msg 				::binary
+		>>
+
+	@doc """
+	Status Update (1017)
+   	The Entity Status packet, also known as the "Update packet" is used to change the appearance(in some cases), certain values unique to
+ 	a character (such as level, stat points, exp) and show active abilities (in other cases). This packet can be used to send 1 status update, or many.
+	"""
+	defp _encode(%StatusUpdate{id: id, count: count, type: type, value: val}), do:
+		<< @status_update ::little-integer-size(2)-unit(8),
+			id 			  ::little-integer-size(4)-unit(8),
+			count		  ::little-integer-size(4)-unit(8),
+			type 		  ::little-integer-size(4)-unit(8),
+			val 		  ::little-integer-size(4)-unit(8),
+			0			  ::little-integer-size(8)-unit(8)	
 		>>
 
 	@doc """

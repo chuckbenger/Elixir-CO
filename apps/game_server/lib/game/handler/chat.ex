@@ -1,4 +1,4 @@
-defmodule Game.Handler.ChatHandler do
+defmodule Game.Handler.Chat do
 	require Logger
 	alias Common.Packets.Structs.{Chat}
 	use Common.Packets.Structs.ChatTypes
@@ -12,6 +12,9 @@ defmodule Game.Handler.ChatHandler do
 					   client.spawned_clients |> inspect |> Chat.talk,
 					   client.char.x |> inspect |> Chat.talk,
 					   client.char.y |> inspect |> Chat.talk] }
+
+    def handle(%Chat{type: @talk, message: "/clear_char"}=c, client), 
+		do: %{client | spawned_clients: %{} }
 
 	def handle(%Chat{type: @talk}=c, client), do: {:sec, c}
 

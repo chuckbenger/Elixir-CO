@@ -11,6 +11,8 @@ end
 defmodule Characters do
    use Ecto.Schema
 
+   import Ecto.Changeset
+
    schema "characters" do
       has_one :server, Common.Models.Database.Servers, foreign_key: :server_id
 
@@ -56,6 +58,11 @@ defmodule Characters do
       field :server_id, :integer
       field :name, :string
    end
+
+   def changeset(user, params \\ :empty) do
+    user
+  end
+
 end
 defmodule Enemys do
    use Ecto.Schema
@@ -283,4 +290,15 @@ defmodule Tqnpcs do
       field :NpcID, :integer
    end
 end
+defmodule Portals do
+      use Ecto.Schema
+      schema "portals" do
+         field :from_map, :integer
+         field :from_x, :integer
+         field :from_y, :integer
+         field :to_map, :integer
+         field :to_x,   :integer
+         field :to_y,   :integer
+      end
+   end
 end

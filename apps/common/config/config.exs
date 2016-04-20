@@ -7,4 +7,4 @@ config :common, Common.Models.Repo,
   database: "eco_db",
   username: "root",
   password: "july30",
-  hostname: "eco.db"
+  hostname: "104.236.88.197"

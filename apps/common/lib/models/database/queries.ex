@@ -1,7 +1,7 @@
 defmodule Common.Models.Database.Queries do
 	import Ecto.Query
 	import Common.Models.Repo
-	alias Common.Models.Database.{Accounts, Servers, Characters, Maps}
+	alias Common.Models.Database.{Accounts, Servers, Characters, Maps, Portals}
 
 	defmodule Account do
 	  	def get_by_username(user) do
@@ -12,7 +12,7 @@ defmodule Common.Models.Database.Queries do
 	  	end
 	end
 
-	defmodule Characters do
+	defmodule Character do
 		def get_by_uid_and_server(uid, server) do
 	  		all from a in Accounts, 
 	  		join: c in assoc(a, :characters),
@@ -20,6 +20,11 @@ defmodule Common.Models.Database.Queries do
 	  		where: a.id == ^uid, 
 	  		where: s.serverName == ^server,
 	  		preload: [characters: c]
+	  	end
+
+	  	def save(character) do
+	  		changeset = Characters.changeset character
+	  		update(changeset)
 	  	end
 	end
 
@@ -34,7 +39,14 @@ defmodule Common.Models.Database.Queries do
 
    defmodule Map do
    		def get_all do
-   			Maps |> where(server_host: ^Atom.to_string(Node.self), id: 1038) |> limit(1) |> all
+   			(from m in Maps,
+  			where: m.server_host == ^Atom.to_string(Node.self) and (m.id == 1002 or m.id == 1015)) |> all
+   		end
+   end
+
+   defmodule Portal do
+   		def get_by_map(map) do
+   			Portals |> where(from_map: ^map) |> all
    		end
    end
 

@@ -47,6 +47,20 @@ defmodule Common.Packets.Decoder do
 		>>), do: {:ok, %ItemUsage{id: id, param1: param1, mode: mode, timestamp: timestamp}}
 
 	@doc """
+	  Item Usages (1005)
+	  The EntityMove packet, also known as the Walk packet, 
+	  this packet is used by all entitys that can move, such as Players, Monsters and if you wish NPCs.
+	"""
+	def decode(<<
+		_size         ::little-integer-size(2)-unit(8),
+		@entity_move  ::little-integer-size(2)-unit(8),
+		id 			  ::little-integer-size(4)-unit(8),
+		dir 		  ::little-integer-size(1)-unit(8),
+		run  		  ::little-integer-size(1)-unit(8),
+		_::binary
+		>>), do: {:ok, %Movement{id: id, dir: dir, run: (if run == 1, do: true, else: false)}}
+
+	@doc """
 	  Auth Message (1052)
  	  The Auth Message Packet is sent by the client during initial Authentication, it is sent to the game server,
  	  the game server uses the keys to determine which account to link to the client.

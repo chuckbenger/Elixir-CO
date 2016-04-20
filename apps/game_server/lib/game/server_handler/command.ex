@@ -1,4 +1,4 @@
-defmodule Game.ServerHandler.CommandHandler do
+defmodule Game.ServerHandler.Command do
 	require Logger
 	import Game.Client
 
@@ -9,6 +9,8 @@ defmodule Game.ServerHandler.CommandHandler do
 			Logger.debug "Sending entity"
 			send_player client.char.id, char.id, {:my_entity_is, client.char}
 			add_character(char, client)
+		else
+			send_player(client.char.id, char.id, :i_removed_you)
 		end
 	end
 end
